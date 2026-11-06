@@ -7,7 +7,7 @@
     "@neondatabase/serverless": "^1.0.2"
   },
   "scripts": {
-    "start": "node server.mjs",
-    "dev": "node --watch server.mjs"
+    "start": "node local-server.mjs",
+    "dev": "node --watch local-server.mjs"
   }
 }

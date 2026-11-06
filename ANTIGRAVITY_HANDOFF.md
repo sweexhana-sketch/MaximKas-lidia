@@ -12,7 +12,7 @@ Tidak ada `npm install` karena versi prototipe menggunakan modul bawaan Node.js.
 ## Struktur
 
 - `public/` — tampilan aplikasi mobile.
-- `server.mjs` — web server dan REST API.
+- `local-server.mjs` — web server dan REST API.
 - `data/maxim-finance.sqlite` — database demo lokal.
 - `README.md` — ringkasan fitur dan endpoint.
 
