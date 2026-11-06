@@ -1,3 +1,4 @@
+const _fetch=window.fetch.bind(window);window.fetch=async(url,opts={})=>{const go=()=>_fetch(url,{...opts,headers:{...(opts.headers||{}),'x-app-pin':localStorage.getItem('pin')||''}});let r=await go();if(r.status===401){const p=prompt('Masukkan PIN aplikasi');if(p!==null){localStorage.setItem('pin',p);r=await go()}}return r};
 const rupiah = value => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);
 const formatDate = date => new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',year:'numeric'}).format(new Date(`${date}T00:00:00`));
 const dialog = document.querySelector('#entryDialog');

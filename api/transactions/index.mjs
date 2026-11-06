@@ -1,7 +1,9 @@
+import { authorized } from '../_auth.mjs';
 import { randomUUID } from 'node:crypto';
 import { ensureSchema, getSql, today } from '../_db.mjs';
 
 export default async function handler(req, res) {
+  if (!authorized(req, res)) return;
   try {
     const sql = getSql();
     await ensureSchema(sql);

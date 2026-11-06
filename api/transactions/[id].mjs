@@ -1,6 +1,8 @@
+import { authorized } from '../_auth.mjs';
 import { ensureSchema, getSql } from '../_db.mjs';
 
 export default async function handler(req, res) {
+  if (!authorized(req, res)) return;
   if (req.method !== 'DELETE') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const sql = getSql();
