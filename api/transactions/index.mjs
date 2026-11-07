@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { authenticate } from '../_auth.mjs';
+import { notifyTelegram } from '../_telegram.mjs';
 import { ensureSchema, getSql, nowTime, today } from '../_db.mjs';
 
 const num = v => (v === null || v === undefined || v === '' ? null : Number(v));
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
       };
       await sql`INSERT INTO transactions (id, transaction_date, transaction_time, type, category, amount, note, location, latitude, longitude, owner)
         VALUES (${row.id}, ${row.transaction_date}, ${row.transaction_time}, ${row.type}, ${row.category}, ${row.amount}, ${row.note}, ${row.location}, ${row.latitude}, ${row.longitude}, ${row.owner})`;
+      if (user.role === 'driver') await notifyTelegram(row);
       return res.status(201).json(row);
     }
     return res.status(405).json({ error: 'Method not allowed' });
