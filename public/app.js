@@ -48,6 +48,7 @@ async function load() {
       box.innerHTML = Object.entries(summary.byOwner || {}).map(([o, v]) => `<div><b>${o}</b> · masuk ${rupiah(v.income)} · keluar ${rupiah(v.expense)} · saldo ${rupiah(v.balance)}</div>`).join('') || 'Belum ada transaksi hari ini.';
     } else box.hidden = true;
     render(items);
+    if (session.user.role === 'admin') loadReport();
   } catch (err) { $('#count').textContent = 'Gagal memuat data: ' + err.message; }
 }
 
@@ -116,6 +117,7 @@ loginDialog.addEventListener('cancel', e => e.preventDefault());
 
 function start() {
   document.body.classList.remove('locked');
+  $('#adminDash').hidden = session.user.role !== 'admin';
   $('#userLabel').textContent = `Masuk sebagai ${session.user.username} (${session.user.role})`;
   load();
 }
@@ -123,3 +125,51 @@ const now = new Date();
 $('#todayLabel').textContent = new Intl.DateTimeFormat('id-ID',{weekday:'long',day:'numeric',month:'long'}).format(now);
 setForm('income');
 if (session) start(); else loginDialog.showModal();
+
+// ---- Dashboard admin ----
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let lastReport = null;
+function reportQuery() {
+  const p = new URLSearchParams();
+  [['from','#fFrom'],['to','#fTo'],['owner','#fOwner'],['type','#fType']].forEach(([k, s]) => { if ($(s).value) p.set(k, $(s).value); });
+  return p.toString();
+}
+async function loadReport() {
+  try {
+    const res = await api('/api/report?' + reportQuery());
+    const r = await res.json();
+    if (!res.ok) throw new Error(r.error);
+    lastReport = r;
+    if (!$('#fFrom').value) $('#fFrom').value = r.from;
+    if (!$('#fTo').value) $('#fTo').value = r.to;
+    $('#reportCards').innerHTML =
+      `<div class="rc in"><small>Pemasukan</small><b>${rupiah(r.totals.income)}</b></div>` +
+      `<div class="rc out"><small>Pengeluaran</small><b>${rupiah(r.totals.expense)}</b></div>` +
+      `<div class="rc"><small>Saldo bersih</small><b>${rupiah(r.totals.balance)}</b></div>` +
+      `<div class="rc"><small>Jumlah transaksi</small><b>${r.totals.count}</b></div>`;
+    const owners = Object.entries(r.byOwner).map(([o, v]) => `<tr><td>${esc(o)}</td><td class="n">${rupiah(v.income)}</td><td class="n">${rupiah(v.expense)}</td><td class="n">${v.count}</td></tr>`).join('');
+    const cats = r.byCategory.map(c => `<tr><td>${esc(c.category)}</td><td>${c.type === 'income' ? 'Masuk' : 'Keluar'}</td><td class="n">${rupiah(c.total)}</td><td class="n">${c.count}</td></tr>`).join('');
+    const days = r.byDay.map(d => `<tr><td>${formatDate(d.date)}</td><td class="n">${rupiah(d.income)}</td><td class="n">${rupiah(d.expense)}</td><td class="n">${rupiah(d.income - d.expense)}</td></tr>`).join('');
+    const all = r.rows.map(t => {
+      const map = t.latitude != null ? `<a href="https://www.google.com/maps?q=${t.latitude},${t.longitude}" target="_blank" rel="noopener">${esc(t.location || 'Peta')}</a>` : esc(t.location);
+      return `<tr><td>${formatDate(t.transaction_date)}</td><td>${esc((t.transaction_time || '').slice(0,5))}</td><td>${esc(t.owner)}</td><td>${esc(t.category)}</td><td class="n">${t.type === 'income' ? '+' : '-'}${rupiah(t.amount)}</td><td>${map}</td><td>${esc(t.note)}</td></tr>`;
+    }).join('');
+    const empty = '<tr><td colspan="7">Tidak ada data.</td></tr>';
+    $('#reportTables').innerHTML =
+      `<table class="rtable"><caption>Per akun</caption><tr><th>Akun</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Trx</th></tr>${owners || empty}</table>` +
+      `<table class="rtable"><caption>Per kategori</caption><tr><th>Kategori</th><th>Jenis</th><th class="n">Total</th><th class="n">Trx</th></tr>${cats || empty}</table>` +
+      `<table class="rtable"><caption>Per hari</caption><tr><th>Tanggal</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Bersih</th></tr>${days || empty}</table>` +
+      `<div class="tscroll"><table class="rtable"><caption>Semua transaksi</caption><tr><th>Tanggal</th><th>Jam</th><th>Akun</th><th>Kategori</th><th class="n">Nominal</th><th>Lokasi</th><th>Catatan</th></tr>${all || empty}</table></div>`;
+  } catch (err) { $('#reportCards').textContent = 'Gagal memuat laporan: ' + err.message; }
+}
+$('#reportFilter').addEventListener('submit', e => { e.preventDefault(); loadReport(); });
+$('#csvBtn').onclick = () => {
+  if (!lastReport) return;
+  const cell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = [['Tanggal','Jam','Akun','Jenis','Kategori','Nominal','Lokasi','Latitude','Longitude','Catatan'].join(',')]
+    .concat(lastReport.rows.map(t => [t.transaction_date, (t.transaction_time || '').slice(0,5), t.owner, t.type, t.category, t.amount, t.location, t.latitude, t.longitude, t.note].map(cell).join(',')));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type: 'text/csv;charset=utf-8'}));
+  a.download = `maximkas-${lastReport.from}_${lastReport.to}.csv`;
+  a.click();
+};

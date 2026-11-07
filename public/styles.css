@@ -16,3 +16,11 @@ body.locked{min-height:100vh;background:linear-gradient(160deg,#0f3d2e,#1a6b4f 5
 #loginForm{display:grid;gap:14px;padding:28px 24px;border-radius:24px;background:#fff;box-shadow:0 24px 60px rgba(0,0,0,.35)}
 .login-brand{text-align:center}.login-brand .logo{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:16px;font-size:1.6rem}
 .login-brand h1{margin:10px 0 4px;font-size:1.5rem}.login-brand p{margin:0;color:#6d7679}
+
+.admin-dash{margin:0 0 20px}.admin-dash[hidden]{display:none}
+.filters{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}.filters label{font-size:.8rem;display:grid;gap:3px}.filters input,.filters select{width:100%;box-sizing:border-box}
+.report-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.rc{padding:12px;border-radius:14px;background:#fff}.rc small{display:block;color:#6d7679}.rc b{font-size:1.05rem}.rc.in b{color:var(--green)}.rc.out b{color:#dc7f25}
+.rtable{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;font-size:.8rem;margin-bottom:12px}
+.rtable caption{text-align:left;font-weight:700;padding:8px 4px}.rtable th,.rtable td{padding:7px 8px;text-align:left;border-bottom:1px solid #eef1f2}.rtable td.n,.rtable th.n{text-align:right;white-space:nowrap}
+.tscroll{overflow-x:auto}
