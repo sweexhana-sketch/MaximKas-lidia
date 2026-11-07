@@ -8,3 +8,11 @@
 .owner-summary[hidden]{display:none}
 .badge{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:#e8eef0;font-size:.7rem}
 .transaction-info a{color:inherit}
+
+body.locked main,body.locked nav{display:none}
+body.locked{min-height:100vh;background:linear-gradient(160deg,#0f3d2e,#1a6b4f 55%,#0b2a20)}
+#loginDialog{border:0;padding:0;background:transparent;width:min(92vw,380px);max-width:none;margin:auto}
+#loginDialog::backdrop{background:linear-gradient(160deg,#0f3d2e,#1a6b4f 55%,#0b2a20)}
+#loginForm{display:grid;gap:14px;padding:28px 24px;border-radius:24px;background:#fff;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.login-brand{text-align:center}.login-brand .logo{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:16px;font-size:1.6rem}
+.login-brand h1{margin:10px 0 4px;font-size:1.5rem}.login-brand p{margin:0;color:#6d7679}

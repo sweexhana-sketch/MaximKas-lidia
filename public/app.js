@@ -13,7 +13,7 @@ async function api(url, opts = {}) {
   if (res.status === 401 && !url.includes('/api/login')) { logout(); throw new Error('Sesi berakhir, silakan login.'); }
   return res;
 }
-function logout() { session = null; localStorage.removeItem('session'); $('#transactions').innerHTML = ''; if (!loginDialog.open) loginDialog.showModal(); }
+function logout() { session = null; document.body.classList.add('locked'); $('#ownerSummary').hidden = true; ['#balance','#income','#expense'].forEach(s => $(s).textContent = 'Rp0'); localStorage.removeItem('session'); $('#transactions').innerHTML = ''; if (!loginDialog.open) loginDialog.showModal(); }
 
 const nowDate = () => new Intl.DateTimeFormat('en-CA').format(new Date());
 const nowTime = () => new Date().toTimeString().slice(0,5);
@@ -115,6 +115,7 @@ $('#loginForm').addEventListener('submit', async e => {
 loginDialog.addEventListener('cancel', e => e.preventDefault());
 
 function start() {
+  document.body.classList.remove('locked');
   $('#userLabel').textContent = `Masuk sebagai ${session.user.username} (${session.user.role})`;
   load();
 }
